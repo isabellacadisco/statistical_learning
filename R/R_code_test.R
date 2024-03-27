@@ -144,6 +144,21 @@ summary(df)
 chisq_test <- chisq.test(df$educational_title, df$avg_monthly_salary)
 chisq_test
 
+chisq_test <- chisq.test(df$educational_title, df$prevention)
+chisq_test
+
+
+install.packages("partykit", repos = "http://R-Forge.R-project.org")
+library("partykit")
+ct <- ctree(prevention ~ ., data = subset(df, select = -c(citizenship_code)))
+plot(ct, tp_args = list(text = TRUE))
+
+# Predict using the ctree model
+predictions <- predict(ct, newdata = subset(df, select=-c(citizenship_code)))
+
+# Calculate accuracy
+accuracy <- confusionMatrix(predictions, data_3$prevention)$overall['Accuracy']
+accuracy
 
 library(ggplot2)
 
@@ -177,4 +192,169 @@ ggplot(df, aes(x = Continent, y = family_money_back_home, fill = Continent)) +
   geom_boxplot() +
   labs(x = "Continente", y = "Denaro Personale Riportato a Casa", title = "Distribuzione del Denaro Personale Riportato a Casa per Continente") +
   theme_minimal()
+
+data = df
+
+#gender visualisation
+male_perc <- nrow(data %>% dplyr::select(genre) %>% filter(genre == "Male"))/length(data$genre)*100
+female_perc <- nrow(data %>% dplyr::select(genre) %>% 
+                      filter(genre == "Female"))/length(data$genre)*100
+
+pgen <- data %>%  
+  count(genre) %>% 
+  mutate("perc" = round(c(female_perc,male_perc),2))
+
+pgen <- pgen %>% 
+  arrange(desc(genre)) %>%
+  mutate(prop = n / sum(pgen$perc) *100) %>%
+  mutate(ypos = cumsum(prop)- 0.5*prop )
+
+ggplot(pgen, aes(x="", y=n, fill=genre)) +
+  geom_bar(stat="identity", width=1,color="white")+
+  coord_polar("y",0,1)+
+  labs(x = "", y = "",title="Gender")+
+  theme_minimal()+ # remove background, grid, numeric labels
+  theme(plot.title=element_text(face="bold",  hjust=0.5))+
+  geom_text(aes(y = ypos, label = perc), color = "white", size=6) +
+  scale_fill_brewer(palette="Set2")
+
+rm(pgen)
+#--------------------------------------------------------------------------
+
+#age for different genders
+data$age <- 2016 - data$yob
+
+data$age_group <- cut(data$age, c(0,20,24,35,70), labels = c("<21","21-24","25-35",">35") )
+
+ggplot(data,aes(x=age_group, fill=genre))+
+  geom_bar(col="black")+
+  facet_wrap(.~genre)+
+  stat_count(aes(y=..count.., label=..count..), vjust=-0.5,geom="text", col="black", size=3.5)+
+  labs(x="Age Group", y = "Count", title="Age distribution", fill= "Sex")+
+  theme_minimal()+
+  theme(plot.title=element_text(face="bold",  hjust=0.5))+
+  scale_fill_brewer(palette="Set2")
+
+
+#-----------------------------------------------------------------------
+
+#check for outliers
+
+#prepare a boxplot for every numeric variable
+#select numeric features
+data_num <- select_if(data,is.numeric) 
+
+#create a tibble with two columns: the feature name and the values
+data_num_box <-data_num %>% gather(variable,values,1:10)
+
+ggplot(data_num_box)+
+  geom_boxplot(aes(x=variable,y=values), fill = "salmon") + 
+  facet_wrap(~variable,ncol=3,scales="free") + 
+  theme(strip.text.x = element_blank(),
+        text = element_text(size=12))
+
+
+library(corrplot)
+correlation <- cor(data_num)
+corrplot(correlation, type = "upper", method = "number", tl.col = "black", tl.srt = 45, tl.cex = 0.5)
+
+
+
+# apply hclust function from cluster R package in order to cluster our dataset.
+
+# The object returned by hclust function contains information about solutions with 
+# different numbers of clusters, we pass the cutree function the cluster object and
+# the number of clusters we’re interested in.
+#We identify the appropriate number of clusters based on Dendrogram.
+
+library(cluster)
+# calculate distance (factors needed). This is my dissimilarity matrix
+gower_dist<-daisy(data, metric = "gower")
+# hierarchical clustering
+hc_visual<-hclust(gower_dist, method = "ward.D2")
+plot(hc_visual, cex = 0.6, hang=-1, labels=FALSE)
+
+summary(data)
+
+
+library(rpart)
+library(rpart.plot) 
+tree_model <- rpart(prevention ~ ., data = df, method = "class")
+plot(tree_model)
+
+tree <- rpart(prevention ~ ., data=subset(df, select = -c(citizenship_code)), control=rpart.control(cp=.0001))
+
+#view results
+printcp(tree)
+
+#identify best cp value to use
+best <- tree$cptable[which.min(tree$cptable[,"xerror"]),"CP"]
+pruned_tree <- prune(tree, best)
+prp(pruned_tree,
+    faclen = 0,   # use full names for factor labels
+    extra = 1,    # display number of obs. for each terminal node
+    roundint = FALSE,  # don't round to integers in output
+    digits = 5,   # display 5 decimal places in output
+    cex = 0.5
+    )    # adjust text size here (default is 1)
+
+
+glm(prevention ~ ., data = df, family = binomial(link = 'logit'))
+
+
+
+Logit<-glm(prevention~avg_working_hours_pw+age_group+genre+Continent+educational_title+yo_arrival_ita+religion+yob+marital_status+recognized_binary+recognized+age_group+language_knowledge+legal_status+n_of_children+partner_citizenship,data=data,family=binomial) 
+summary(Logit) 
+
+
+# Fit logistic regression model
+logit_model <- glm(prevention ~ ., data = data, family = binomial)
+
+names(data)
+sapply(data, class)
+sapply(data[, sapply(data, is.factor)], levels)
+
+
+# Summary of the model
+summary(logit_model)
+
+
+
+summary(data)
+
+# After selecting features and calculating the distance matrix, it is time to apply hclust function from cluster R package in order to cluster our dataset.
+# 
+# The object returned by hclust function contains information about solutions with different numbers of clusters, we pass the cutree function the cluster object and the number of clusters we’re interested in. We identify the appropriate number of clusters based on Dendrogram.
+data <- data[,-16]
+library(cluster)
+library(gower)
+# calculate distance (factors needed)
+gower_dist<-daisy(data, metric = "gower")
+# hierarchical clustering
+hc<-hclust(gower_dist, method = "ward.D2")
+# dendrogram 
+plot(hc, labels=FALSE)
+rect.hclust(hc, k=4, border="red")
+coph.c=cophenetic(hc)
+cor(gower_dist,coph.c) 
+
+
+# choose k, number of clusters 
+cluster<-cutree(hc, k=4)
+# add cluster to original data 
+data<-cbind(data, cluster = as.factor(cluster))
+
+mymode<-function(x){
+  uniqx <- unique(x)
+  uniqx[which.max(tabulate(match(x, uniqx)))]
+}
+
+
+#table to summarise
+cluster_data <- data %>% group_by(cluster) %>% 
+  summarise(genre = mymode(genre),
+            age = mymode(age),
+            marital_status = mymode(marital_status),
+            educational_title = mymode(educational_title)
+  )
 
