@@ -191,7 +191,7 @@ ggplot(pgen, aes(x="", y=n, fill=genre)) +
   theme_minimal()+ # remove background, grid, numeric labels
   theme(plot.title=element_text(face="bold",  hjust=0.5))+
   geom_text(aes(y = ypos, label = perc), color = "white", size=6) +
-  scale_fill_brewer(palette="Set9")
+  scale_fill_brewer(palette="Set4")
 
 #------------------------
 
@@ -234,7 +234,7 @@ ggplot(ppob, aes(x = "", y = n, fill = pob)) +
   theme_minimal() + # Remove background, grid, numeric labels
   theme(plot.title = element_text(face = "bold", hjust = 0.5)) +
   geom_text(aes(y = ypos, label = perc), color = "white", size = 6) +
-  scale_fill_brewer(palette = "Set9")
+  scale_fill_brewer(palette = "Set4")
 
 #---------------------------------------
 
@@ -253,7 +253,7 @@ ggplot(continent_counts, aes(x = continent, y = count, fill = continent)) +
        x = "Continent", y = "Count") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  scale_fill_brewer(palette = "Set3") 
+  scale_fill_brewer(palette = "Set4") 
 
 
 #-----------------------------------------------------
@@ -291,7 +291,7 @@ ggplot(pprevention, aes(x = "", y = n, fill = prevention)) +
 
 ggplot(df, aes(x=citizenship, fill= prevention))+
   geom_bar(col="black", alpha=0.9)+
-  scale_fill_brewer(label=c("No","Yes"),palette="Set3")+
+  scale_fill_brewer(label=c("No","Yes"),palette="Set4")+
   labs(x=" ", fill="prevention", title="citizenship")+
   theme_minimal()+
   theme(plot.title= element_text(face = "bold", hjust=0.5))
@@ -301,17 +301,17 @@ ggplot(df, aes(x=citizenship, fill= prevention))+
 
 ggplot(df, aes(x=educational_title, fill= prevention))+
   geom_bar(col="black", alpha=0.9)+
-  scale_fill_brewer(label=c("No","Yes"),palette="Set3")+
+  scale_fill_brewer(label=c("No","Yes"),palette="Set4")+
   labs(x=" ", fill="prevention", title="ed title")+
   theme_minimal()+
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
         axis.text.x = element_text(angle = 45, hjust = 1))  
 
-# prevention by ed partner citizenship
+# prevention by partner citizenship
 
 ggplot(df, aes(x=partner_citizenship, fill= prevention))+
   geom_bar(col="black", alpha=0.9)+
-  scale_fill_brewer(label=c("No","Yes"),palette="Set3")+
+  scale_fill_brewer(label=c("No","Yes"),palette="Set4")+
   labs(x=" ", fill="prevention", title="ed title")+
   theme_minimal()+
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
@@ -322,7 +322,7 @@ ggplot(df, aes(x=partner_citizenship, fill= prevention))+
 
 ggplot(df, aes(x=religion, fill= prevention))+
   geom_bar(col="black", alpha=0.9)+
-  scale_fill_brewer(label=c("No","Yes"),palette="Set3")+
+  scale_fill_brewer(label=c("No","Yes"),palette="Set4")+
   labs(x=" ", fill="prevention", title="ed title")+
   theme_minimal()+
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
@@ -368,7 +368,7 @@ GGally::ggcorr(data = NULL,
   theme(legend.position = "none")
 
 corPlot(df,numbers=TRUE,upper=FALSE,diag=FALSE,
-        ,xlas=2)
+        xlas=2)
 
 
 #--------------------------------------------------------------
@@ -561,4 +561,6 @@ print(predictions)
 
 
 # UNSUPERVISED, CLUSTERING
+
+
 
